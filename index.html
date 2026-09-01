@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Title & Meta -->
+    <title>Siddhivinayak Tours & Travels | India's #1 AI Travel Platform</title>
+    <meta name="description" content="Book premium tour packages, Char Dham Yatra, 12 Jyotirlinga Darshan, Kashmir holidays & luxury SUV car rentals across India with Siddhivinayak Tours." />
+    <meta name="keywords" content="Siddhivinayak Tours, Char Dham Yatra, 12 Jyotirlinga, Mahakaleshwar, Thar self drive, Innova Crysta rental, Kashmir tours, Goa packages" />
+    <meta name="author" content="Siddhivinayak Tours and Travels" />
+    
+    <!-- Open Graph / Facebook / WhatsApp Preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://siddhivinayaktours.com/" />
+    <meta property="og:title" content="Siddhivinayak Tours & Travels | India's AI Travel Platform" />
+    <meta property="og:description" content="AI Travel Assistant, Char Dham Yatra, 12 Jyotirlinga, Luxury Outstation Cabs & Tour Packages." />
+    <meta property="og:image" content="https://siddhivinayaktours.com/favicon.svg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Siddhivinayak Tours & Travels | India AI Travel" />
+    <meta name="twitter:description" content="Book Char Dham Yatra, 12 Jyotirlinga, Kashmir tours & luxury car rentals in India." />
+    <meta name="twitter:image" content="https://siddhivinayaktours.com/favicon.svg" />
+
+    <!-- Theme & Color Scheme -->
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="msapplication-TileColor" content="#0f172a" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <!-- Favicon Assets & Manifest -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=2" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg?v=2" color="#fbbf24" />
+    <link rel="manifest" href="/site.webmanifest?v=2" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- JSON-LD Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "Siddhivinayak Tours and Travels",
+      "image": "https://siddhivinayaktours.com/favicon.svg",
+      "telephone": "+918487889151",
+      "email": "info@siddhivinayaktours.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Plot 44, Express Highway Service Road, Dadar West",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400028",
+        "addressCountry": "IN"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "1280"
+      },
+      "priceRange": "₹₹ - ₹₹₹"
+    }
+    </script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-amber-500 selection:text-slate-950">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Register PWA Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

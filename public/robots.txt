@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /business
+
+Sitemap: https://siddhivinayaktours.com/sitemap.xml

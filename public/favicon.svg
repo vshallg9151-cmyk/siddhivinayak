@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="innerShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#goldGrad)" />
+  <rect x="20" y="20" width="472" height="472" rx="104" fill="url(#innerShine)" />
+
+  <!-- Inner Gold Ring -->
+  <rect x="28" y="28" width="456" height="456" rx="96" fill="none" stroke="#fef3c7" stroke-width="8" stroke-opacity="0.7" />
+
+  <!-- Crown/Star Symbol above Car (Siddhivinayak Royal Accent) -->
+  <path d="M 256 80 L 270 115 L 308 115 L 277 136 L 289 172 L 256 150 L 223 172 L 235 136 L 204 115 L 242 115 Z" fill="#0f172a" />
+
+  <!-- Luxury Car Emblem (Dark Navy #0f172a) -->
+  <g fill="#0f172a">
+    <!-- Car Body Shape -->
+    <path d="M 100 320 
+             C 100 320 105 295 130 280 
+             L 165 225 
+             C 185 195 215 185 260 185 
+             L 330 185 
+             C 370 185 398 205 418 235 
+             L 445 280 
+             C 465 295 470 320 470 320 
+             L 465 345 
+             C 465 360 450 370 435 370 
+             L 400 370 
+             C 392 335 362 310 325 310 
+             C 288 310 258 335 250 370 
+             L 220 370 
+             C 212 335 182 310 145 310 
+             C 108 310 78 335 70 370 
+             L 50 370 
+             C 35 370 25 360 25 345 
+             Z" />
+
+    <!-- Windshield cutout in Gold -->
+    <path d="M 175 230 L 205 198 C 220 192 240 192 260 192 L 325 192 C 340 192 355 200 365 212 L 385 230 Z" fill="#fbbf24" />
+
+    <!-- Wheel Cutouts -->
+    <circle cx="145" cy="370" r="42" fill="#0f172a" />
+    <circle cx="145" cy="370" r="24" fill="#fbbf24" />
+    <circle cx="325" cy="370" r="42" fill="#0f172a" />
+    <circle cx="325" cy="370" r="24" fill="#fbbf24" />
+
+    <!-- Headlight & Rear Light -->
+    <ellipse cx="445" cy="295" rx="14" ry="8" fill="#fef3c7" />
+    <ellipse cx="45" cy="295" rx="10" ry="6" fill="#ef4444" />
+  </g>
+</svg>
