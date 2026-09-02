@@ -108,10 +108,10 @@ export default function CarSelectionPage({ onNavigate }) {
                 <div
                   key={car.id}
                   onClick={() => handleSelectCar(car)}
-                  className={`bg-slate-900/90 backdrop-blur-md rounded-3xl border transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between ${
+                  className={`rounded-3xl border transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-2xl shadow-amber-500/10 scale-[1.02]'
-                      : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                      ? 'bg-gradient-to-br from-amber-500/20 via-amber-500/5 to-slate-900/90 border-amber-400 ring-2 ring-amber-400/50 shadow-2xl shadow-amber-500/20 scale-[1.02]'
+                      : 'bg-slate-900/80 backdrop-blur-md border-slate-800 hover:border-slate-700 hover:bg-slate-900'
                   }`}
                 >
                   {/* Image Banner */}

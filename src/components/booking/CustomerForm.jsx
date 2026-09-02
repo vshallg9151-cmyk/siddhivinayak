@@ -9,7 +9,7 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
   const isSelfDrive = rentalType === 'self-drive';
 
   return (
-    <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl space-y-6">
+    <div className="bg-slate-900/80 backdrop-blur-md rounded-3xl p-6 sm:p-8 border border-slate-800/80 shadow-xl space-y-6">
       
       <div className="pb-3 border-b border-slate-800 flex items-center justify-between">
         <div>

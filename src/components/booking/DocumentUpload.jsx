@@ -145,7 +145,7 @@ export default function DocumentUpload({
   };
 
   return (
-    <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl space-y-6">
+    <div className="bg-slate-900/80 backdrop-blur-md rounded-3xl p-6 sm:p-8 border border-slate-800/80 shadow-xl space-y-6">
       
       {/* Header */}
       <div className="pb-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">

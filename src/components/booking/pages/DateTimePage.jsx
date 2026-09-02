@@ -127,7 +127,7 @@ export default function DateTimePage({ onNavigate }) {
           </div>
 
           {/* Interactive Date & Time Picker */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
             <h2 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
               <Sparkles className="w-4 h-4" /> Pick Travel Dates & Duration
             </h2>
