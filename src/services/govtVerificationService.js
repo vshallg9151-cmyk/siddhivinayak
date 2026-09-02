@@ -109,3 +109,33 @@ export function validateGovtIdNumber(idType, idNumber) {
       return validateAadhaarNumber(idNumber);
   }
 }
+
+/**
+ * Validates 10-digit Indian Mobile Number
+ */
+export function validateIndianMobile(mobile) {
+  if (!mobile || !mobile.trim()) {
+    return { valid: false, error: 'Mobile number is required.' };
+  }
+  const clean = mobile.replace(/[\s\-\+\(\)]/g, '').replace(/^91/, '');
+  if (!/^[6-9]\d{9}$/.test(clean)) {
+    return { valid: false, error: 'Please enter a valid 10-digit Indian Mobile Number starting with 6, 7, 8, or 9.' };
+  }
+  return { valid: true, clean, formatted: `+91 ${clean}` };
+}
+
+/**
+ * Validates Email Address format
+ */
+export function validateEmailAddress(email) {
+  if (!email || !email.trim()) {
+    return { valid: true };
+  }
+  const clean = email.trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(clean)) {
+    return { valid: false, error: 'Please enter a valid email address (e.g. name@example.com).' };
+  }
+  return { valid: true, clean };
+}
+
