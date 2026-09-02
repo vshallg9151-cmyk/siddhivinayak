@@ -179,7 +179,7 @@ export default function FloatingAIAssistant({ onOpenPlanner, onNavigateFleet }) 
   return (
     <>
       {/* Floating Toggle Button */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-[88px] right-6 z-50 flex flex-col items-end gap-2">
         <motion.button
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.94 }}
@@ -209,7 +209,7 @@ export default function FloatingAIAssistant({ onOpenPlanner, onNavigateFleet }) 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed bottom-24 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[580px] bg-slate-900 text-slate-100 rounded-3xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden backdrop-blur-xl"
+            className="fixed bottom-[152px] right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[540px] bg-slate-900 text-slate-100 rounded-3xl shadow-2xl border border-slate-800 flex flex-col overflow-hidden backdrop-blur-xl"
           >
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950/40 p-4 border-b border-slate-800 flex items-center justify-between">

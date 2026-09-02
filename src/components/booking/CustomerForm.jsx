@@ -1,20 +1,22 @@
 import React from 'react';
-import { User, Phone, Mail, MapPin, FileText, MessageSquare, ShieldCheck } from 'lucide-react';
+import { User, Phone, Mail, MapPin, FileText, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function CustomerForm({ formData, setFormData, rentalType = 'self-drive' }) {
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData({ [field]: value });
   };
 
   const isSelfDrive = rentalType === 'self-drive';
 
   return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+    <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl space-y-6">
       
-      <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
+      <div className="pb-3 border-b border-slate-800 flex items-center justify-between">
         <div>
-          <h3 className="text-base font-extrabold text-brand-navy">Customer Information</h3>
-          <p className="text-xs text-slate-500 font-medium">
+          <h3 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="w-4 h-4" /> 2. Customer Information
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">
             {isSelfDrive
               ? 'Enter driver & primary contact details for contract generation.'
               : 'Enter primary contact details for contract generation.'}
@@ -26,7 +28,7 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
         
         {/* Full Name */}
         <div>
-          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
             {isSelfDrive ? 'Full Name (As per Driving License) *' : 'Full Name (As per Govt ID) *'}
           </label>
           <div className="relative">
@@ -37,18 +39,18 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
               placeholder="e.g. Rajesh Kulkarni"
               value={formData.fullName || ''}
               onChange={(e) => handleChange('fullName', e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-extrabold text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
+              className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
         </div>
 
         {/* Mobile Number */}
         <div>
-          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
             Mobile Number (For WhatsApp OTP) *
           </label>
           <div className="relative">
-            <span className="text-xs font-bold text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2">
+            <span className="text-xs font-bold text-amber-400 absolute left-3.5 top-1/2 -translate-y-1/2">
               +91
             </span>
             <input
@@ -57,14 +59,14 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
               placeholder="98765 43210"
               value={formData.mobile || ''}
               onChange={(e) => handleChange('mobile', e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-12 pr-4 py-2.5 text-xs font-extrabold text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
+              className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-12 pr-4 py-3 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
         </div>
 
         {/* Email Address */}
         <div>
-          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
             Email Address *
           </label>
           <div className="relative">
@@ -75,14 +77,14 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
               placeholder="rajesh@example.com"
               value={formData.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-extrabold text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
+              className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
         </div>
 
         {/* City */}
         <div>
-          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
+          <label className="text-[11px] font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
             City of Residence *
           </label>
           <div className="relative">
@@ -93,78 +95,31 @@ export default function CustomerForm({ formData, setFormData, rentalType = 'self
               placeholder="e.g. Mumbai"
               value={formData.city || ''}
               onChange={(e) => handleChange('city', e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-extrabold text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
+              className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
         </div>
 
-        {/* Driving License Number - ONLY for Self Drive */}
+        {/* Driving License Number (Self Drive Only) */}
         {isSelfDrive && (
-          <div>
-            <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
-              Driving License Number (DL) *
+          <div className="md:col-span-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-amber-400 block mb-1.5">
+              Driving License Number *
             </label>
             <div className="relative">
-              <FileText className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <FileText className="w-4 h-4 text-amber-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
-                placeholder="e.g. MH0220201234567"
+                placeholder="MH-14-2018-0098234"
                 value={formData.dlNumber || ''}
-                onChange={(e) => handleChange('dlNumber', e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
+                onChange={(e) => handleChange('dlNumber', e.target.value.toUpperCase())}
+                className="w-full bg-slate-950 border border-amber-500/50 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-amber-500 uppercase tracking-widest"
               />
             </div>
           </div>
         )}
 
-        {/* Preferred Contact Channel */}
-        <div>
-          <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
-            Preferred Communication Channel
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => handleChange('preferredContact', 'WhatsApp')}
-              className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                formData.preferredContact === 'WhatsApp'
-                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <MessageSquare className="w-3.5 h-3.5" />
-              <span>WhatsApp</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChange('preferredContact', 'Phone Call')}
-              className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                formData.preferredContact === 'Phone Call'
-                  ? 'bg-brand-navy text-brand-gold border-brand-navy shadow-sm'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-              }`}
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Phone Call</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Special Requirements */}
-      <div>
-        <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 block mb-1.5">
-          Special Requirements (Optional)
-        </label>
-        <textarea
-          rows={2}
-          placeholder="e.g. Need child seat, roof carrier, or early 6:00 AM doorstep delivery..."
-          value={formData.specialRequirements || ''}
-          onChange={(e) => handleChange('specialRequirements', e.target.value)}
-          className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-brand-blue"
-        />
       </div>
 
     </div>

@@ -54,23 +54,35 @@ import LegalModal from './components/legal/LegalModal';
 import NotFoundPage from './components/common/NotFoundPage';
 import ServerErrorPage from './components/common/ServerErrorPage';
 
+// Multi-Page Booking Flow Components & Context
+import { BookingProvider, useBooking } from './context/BookingContext';
+import BookingDetailsPage from './components/booking/pages/BookingDetailsPage';
+import DateTimePage from './components/booking/pages/DateTimePage';
+import CarSelectionPage from './components/booking/pages/CarSelectionPage';
+import BookingSummaryPage from './components/booking/pages/BookingSummaryPage';
+import PaymentPage from './components/booking/pages/PaymentPage';
+
 import { FLEET_CARS } from './data/mockData';
 import { vehicleDB } from './services/vehicleDatabase';
 
-// URL Route Helper for Strict Role-Based Paths
+// URL Route Helper for Multi-Page Booking Flow
 function getPageFromPath(path) {
   if (path.startsWith('/super-admin')) return 'super-admin';
   if (path.startsWith('/admin')) return 'admin';
   if (path.startsWith('/user') || path === '/dashboard') return 'dashboard';
   if (path === '/setup' || path === '/create-super-admin') return 'setup';
   if (path.startsWith('/details')) return 'details';
-  if (path.startsWith('/booking')) return 'booking';
-  if (path.startsWith('/compare')) return 'compare';
+  if (path === '/booking') return 'booking';
+  if (path === '/dates') return 'dates';
+  if (path === '/cars') return 'cars';
+  if (path === '/confirmation' || path === '/payment') return 'confirmation';
+  if (path.startsWith('/details/')) return 'details';
   if (path === '/fleet') return 'fleet';
   if (path === '/login') return 'login';
   if (path === '/business') return 'business';
   if (path === '/ubooking') return 'ubooking';
-  return 'home';
+  if (path === '/home') return 'home';
+  return 'login';
 }
 
 function getPathFromPage(page, data = null) {
@@ -79,13 +91,18 @@ function getPathFromPage(page, data = null) {
   if (page === 'dashboard') return '/user/dashboard';
   if (page === 'setup') return '/setup';
   if (page === 'login') return '/login';
+  if (page === 'booking') return '/booking';
+  if (page === 'dates') return '/dates';
+  if (page === 'cars') return '/cars';
+  if (page === 'confirmation' || page === 'payment') return '/confirmation';
   if (page === 'details' && data?.id) return `/details/${data.id}`;
-  if (page === 'home') return '/';
+  if (page === 'home') return '/home';
   return `/${page}`;
 }
 
 function MainAppContent() {
   const { user, requireAuth, showAuthModalNeeded, setShowAuthModalNeeded, authPromptMessage } = useAuth();
+  const { bookingData } = useBooking();
 
   const [activePage, setActivePage] = useState(() => getPageFromPath(window.location.pathname));
   const [selectedCarForDetails, setSelectedCarForDetails] = useState(FLEET_CARS[0]);
@@ -93,6 +110,39 @@ function MainAppContent() {
   const [wishlist, setWishlist] = useState([]);
   const [compareList, setCompareList] = useState([FLEET_CARS[0], FLEET_CARS[1]]);
   const [savedTrips, setSavedTrips] = useState([]);
+
+  // Auth & Step Route Guard Enforcer
+  useEffect(() => {
+    const isStepRoute = ['booking', 'dates', 'cars', 'confirmation'].includes(activePage);
+    
+    if (!user || !user.emailVerified) {
+      if (isStepRoute || activePage === 'home') {
+        setActivePage('login');
+        if (window.location.pathname !== '/login') {
+          window.history.replaceState({}, '', '/login');
+        }
+      }
+    } else {
+      if (activePage === 'login' || activePage === 'home' || window.location.pathname === '/') {
+        setActivePage('booking');
+        if (window.location.pathname !== '/booking') {
+          window.history.replaceState({}, '', '/booking');
+        }
+      } else {
+        const highest = bookingData?.highestStepReached || 1;
+        if (activePage === 'dates' && highest < 3) {
+          setActivePage('booking');
+          window.history.replaceState({}, '', '/booking');
+        } else if (activePage === 'cars' && highest < 4) {
+          setActivePage('dates');
+          window.history.replaceState({}, '', '/dates');
+        } else if (activePage === 'confirmation' && highest < 5) {
+          setActivePage('cars');
+          window.history.replaceState({}, '', '/cars');
+        }
+      }
+    }
+  }, [user, activePage, bookingData?.highestStepReached]);
 
   // Modals state
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -360,11 +410,32 @@ function MainAppContent() {
         )}
 
         {activePage === 'booking' && (
-          <BookingFlowPage
-            car={selectedCarForDetails}
-            initialRentalType={selectedRentalType}
+          <BookingDetailsPage
             onNavigate={handleNavigate}
-            onCompleteBooking={() => handleNavigate('dashboard')}
+          />
+        )}
+
+        {activePage === 'dates' && (
+          <DateTimePage
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {activePage === 'cars' && (
+          <CarSelectionPage
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {activePage === 'confirmation' && (
+          <BookingSummaryPage
+            onNavigate={handleNavigate}
+          />
+        )}
+
+        {activePage === 'payment' && (
+          <PaymentPage
+            onNavigate={handleNavigate}
           />
         )}
 
@@ -438,7 +509,9 @@ export default function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <MainAppContent />
+            <BookingProvider>
+              <MainAppContent />
+            </BookingProvider>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>

@@ -43,9 +43,8 @@ export default function Navbar({
 
   // Base Nav Links
   const navLinks = [
-    { name: t('navHome'), page: 'home', href: '#home' },
+    { name: 'Booking Flow', page: 'booking', href: '#booking' },
     { name: t('navFleet'), page: 'fleet', href: '#fleet' },
-    { name: 'Book Platform', page: 'ubooking', href: '#ubooking' },
     { name: 'Business Hub', page: 'business', href: '#business', badge: 'PRO' },
   ];
 
@@ -64,12 +63,6 @@ export default function Navbar({
     e.preventDefault();
     setMobileMenuOpen(false);
     onNavigate(link.page);
-    if (link.page === 'home' && link.href !== '#home') {
-      setTimeout(() => {
-        const el = document.querySelector(link.href);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    }
   };
 
   return (
@@ -84,7 +77,7 @@ export default function Navbar({
         <div className="flex items-center justify-between gap-2">
           
           {/* Logo */}
-          <button onClick={() => onNavigate('home')} className="flex items-center gap-2.5 group text-left shrink-0">
+          <button onClick={() => onNavigate(user ? 'booking' : 'login')} className="flex items-center gap-2.5 group text-left shrink-0">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
               <Car className="w-5 h-5 text-slate-950 stroke-[2.5]" />
             </div>

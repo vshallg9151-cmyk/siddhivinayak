@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import { userDB } from '../../services/userDatabase';
 import { cityDB } from '../../services/cityDatabaseService';
 import { bookingDB } from '../../services/bookingDatabase';
+import { vehicleDB } from '../../services/vehicleDatabase';
 import { TOUR_PACKAGES_DATA, MOCK_CRM_LEADS } from '../../data/phase5Data';
 import { FLEET_CARS } from '../../data/mockData';
 
@@ -22,6 +23,24 @@ export default function SuperAdminDashboardPage({ onExit }) {
   const [citiesList, setCitiesList] = useState([]);
   const [bookingsList, setBookingsList] = useState([]);
   const [createdAdminSuccess, setCreatedAdminSuccess] = useState(null);
+
+  // Fleet & Custom Pricing State
+  const [fleetList, setFleetList] = useState([]);
+  const [editPriceMap, setEditPriceMap] = useState({});
+  const [editDepositMap, setEditDepositMap] = useState({});
+  const [priceSuccessMsg, setPriceSuccessMsg] = useState('');
+
+  // Add New Vehicle Form state
+  const [showAddVehicleModal, setShowAddVehicleModal] = useState(false);
+  const [newVehName, setNewVehName] = useState('');
+  const [newVehCategory, setNewVehCategory] = useState('SUV');
+  const [newVehPrice, setNewVehPrice] = useState(3999);
+  const [newVehDeposit, setNewVehDeposit] = useState(5000);
+  const [newVehSeats, setNewVehSeats] = useState(5);
+  const [newVehFuel, setNewVehFuel] = useState('Petrol');
+  const [newVehTrans, setNewVehTrans] = useState('Automatic');
+  const [newVehReg, setNewVehReg] = useState('');
+  const [newVehImage, setNewVehImage] = useState('');
   
   // Create Admin Form State
   const [showCreateAdminModal, setShowCreateAdminModal] = useState(false);
@@ -55,11 +74,77 @@ export default function SuperAdminDashboardPage({ onExit }) {
     setCitiesList(cityDB.getAllCitiesForAdmin());
   };
 
+  const refreshFleet = () => {
+    const vehicles = vehicleDB.getVehicles();
+    setFleetList(vehicles);
+
+    const pMap = {};
+    const dMap = {};
+    vehicles.forEach(v => {
+      pMap[v.id] = v.pricePerDay;
+      dMap[v.id] = v.securityDeposit || 5000;
+    });
+    setEditPriceMap(pMap);
+    setEditDepositMap(dMap);
+  };
+
   useEffect(() => {
     refreshUsers();
     refreshCities();
     refreshBookings();
+    refreshFleet();
   }, []);
+
+  const handleUpdatePrice = (vehicleId) => {
+    try {
+      const newPrice = Number(editPriceMap[vehicleId]);
+      const newDeposit = Number(editDepositMap[vehicleId] || 5000);
+
+      if (!newPrice || newPrice <= 0) {
+        alert('Please enter a valid daily rate greater than ₹0.');
+        return;
+      }
+
+      vehicleDB.updateVehicle(vehicleId, {
+        pricePerDay: newPrice,
+        securityDeposit: newDeposit
+      });
+
+      refreshFleet();
+      setPriceSuccessMsg(`✓ Price updated successfully! New Daily Rate: ₹${newPrice.toLocaleString()}/day`);
+      setTimeout(() => setPriceSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err.message || 'Failed to update vehicle price.');
+    }
+  };
+
+  const handleAddVehicleSubmit = (e) => {
+    e.preventDefault();
+    if (!newVehName) return;
+
+    try {
+      vehicleDB.addVehicle({
+        name: newVehName,
+        category: newVehCategory,
+        pricePerDay: Number(newVehPrice),
+        securityDeposit: Number(newVehDeposit),
+        seats: Number(newVehSeats),
+        fuelType: newVehFuel,
+        transmission: newVehTrans,
+        regNumber: newVehReg || `GJ-05-ST-${Math.floor(1000 + Math.random()*9000)}`,
+        images: newVehImage ? [newVehImage] : ['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80']
+      });
+
+      refreshFleet();
+      setShowAddVehicleModal(false);
+      setNewVehName('');
+      setNewVehImage('');
+      setPriceSuccessMsg(`✓ New vehicle "${newVehName}" added to fleet at ₹${Number(newVehPrice).toLocaleString()}/day!`);
+      setTimeout(() => setPriceSuccessMsg(''), 4000);
+    } catch (err) {
+      alert(err.message || 'Failed to add vehicle.');
+    }
+  };
 
   // Filter Users by Role
   const adminAccounts = usersList.filter(u => u.role === 'ADMIN');
@@ -697,15 +782,146 @@ export default function SuperAdminDashboardPage({ onExit }) {
         )}
 
         {activeTab === 'fleet' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2"><Car className="w-5 h-5 text-amber-400" /> Fleet Vehicle Manager</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {FLEET_CARS.map(car => (
-                <div key={car.id} className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <h4 className="font-bold text-white text-xs">{car.name}</h4>
-                  <p className="text-[10px] text-amber-400 font-mono">₹{car.pricePerDay}/day</p>
-                </div>
-              ))}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="px-3 py-1 bg-amber-500/20 text-amber-400 font-extrabold text-[10px] uppercase rounded-full border border-amber-500/30">
+                  SUPER ADMIN PRICING CONTROL
+                </span>
+                <h3 className="text-xl font-black text-white flex items-center gap-2 mt-1">
+                  <Car className="w-6 h-6 text-amber-400" /> Fleet Vehicle & Price Manager
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Set and customize daily rental rates (₹/day) & security deposits for all fleet vehicles across India.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAddVehicleModal(true)}
+                className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs rounded-2xl shadow-lg transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add New Vehicle to Fleet
+              </button>
+            </div>
+
+            {priceSuccessMsg && (
+              <div className="p-4 bg-emerald-950/80 border border-emerald-500/60 rounded-2xl text-xs font-bold text-emerald-300 flex items-center gap-2 animate-in fade-in">
+                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>{priceSuccessMsg}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {fleetList.map((car) => {
+                const carImg = car.image || (Array.isArray(car.images) && car.images[0]) || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80';
+                const currentEditPrice = editPriceMap[car.id] ?? car.pricePerDay;
+                const currentEditDeposit = editDepositMap[car.id] ?? (car.securityDeposit || 5000);
+
+                return (
+                  <div
+                    key={car.id}
+                    className="bg-slate-950 rounded-3xl border border-slate-800 p-5 space-y-4 shadow-xl flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Vehicle Image Banner */}
+                      <div className="relative h-40 w-full rounded-2xl overflow-hidden bg-slate-900 mb-3 border border-slate-800">
+                        <img src={carImg} alt={car.name} className="w-full h-full object-cover" />
+                        <div className="absolute top-2 left-2 bg-slate-950/80 text-amber-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                          {car.category || 'SUV'}
+                        </div>
+                        <div className="absolute top-2 right-2 bg-slate-950/80 text-slate-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+                          {car.regNumber || 'GJ-05-ST-2026'}
+                        </div>
+                      </div>
+
+                      <h4 className="font-extrabold text-white text-sm line-clamp-1">{car.name}</h4>
+                      <p className="text-[11px] text-slate-400 font-medium">{car.model} • {car.location || 'Surat'}</p>
+
+                      <div className="flex items-center gap-2 pt-2 text-[10px] text-slate-400 font-semibold">
+                        <span>👥 {car.seats || 5} Seats</span>
+                        <span>•</span>
+                        <span>⛽ {car.fuelType || 'Petrol'}</span>
+                        <span>•</span>
+                        <span>⚙️ {car.transmission || 'Auto'}</span>
+                      </div>
+                    </div>
+
+                    {/* Price Controls Section */}
+                    <div className="pt-3 border-t border-slate-800/80 space-y-3">
+                      
+                      {/* Daily Rate Input */}
+                      <div>
+                        <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1 flex items-center justify-between">
+                          <span>Daily Rate (₹ / day)</span>
+                          <span className="text-[9px] text-slate-500 font-normal">Super Admin Override</span>
+                        </label>
+                        <div className="relative">
+                          <span className="text-xs font-black text-amber-400 absolute left-3 top-1/2 -translate-y-1/2">₹</span>
+                          <input
+                            type="number"
+                            value={currentEditPrice}
+                            onChange={(e) => setEditPriceMap({ ...editPriceMap, [car.id]: e.target.value })}
+                            className="w-full bg-slate-900 border border-amber-500/40 rounded-xl pl-8 pr-3 py-2 text-xs font-black text-white outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Security Deposit Input */}
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                          Security Deposit (₹ Refundable)
+                        </label>
+                        <div className="relative">
+                          <span className="text-xs font-bold text-slate-400 absolute left-3 top-1/2 -translate-y-1/2">₹</span>
+                          <input
+                            type="number"
+                            value={currentEditDeposit}
+                            onChange={(e) => setEditDepositMap({ ...editDepositMap, [car.id]: e.target.value })}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs font-bold text-slate-200 outline-none focus:ring-2 focus:ring-amber-500 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Quick Adjust Buttons */}
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditPriceMap({ ...editPriceMap, [car.id]: Math.max(500, Number(currentEditPrice) - 500) })}
+                          className="flex-1 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-extrabold text-slate-300"
+                        >
+                          - ₹500
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditPriceMap({ ...editPriceMap, [car.id]: Number(currentEditPrice) + 500 })}
+                          className="flex-1 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-extrabold text-slate-300"
+                        >
+                          + ₹500
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditPriceMap({ ...editPriceMap, [car.id]: Number(currentEditPrice) + 1000 })}
+                          className="flex-1 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[10px] font-extrabold text-amber-400"
+                        >
+                          + ₹1,000
+                        </button>
+                      </div>
+
+                      {/* Save Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdatePrice(car.id)}
+                        className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        Save New Custom Price
+                      </button>
+                    </div>
+
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -807,6 +1023,58 @@ export default function SuperAdminDashboardPage({ onExit }) {
 
               <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 mt-4">
                 <Plus className="w-4 h-4" /> Save City to Database
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD VEHICLE MODAL FORM */}
+      {showAddVehicleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+            <button onClick={() => setShowAddVehicleModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800"><X className="w-5 h-5" /></button>
+            <div>
+              <span className="px-3 py-1 bg-amber-500/20 text-amber-400 font-extrabold text-[10px] uppercase rounded-full border border-amber-500/30">FLEET MANAGER</span>
+              <h3 className="text-2xl font-black text-white mt-2">Add New Vehicle to Fleet</h3>
+            </div>
+            <form onSubmit={handleAddVehicleSubmit} className="space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Vehicle Name *</label>
+                <input type="text" required placeholder="e.g. BMW X5 M-Sport 4x4" value={newVehName} onChange={(e) => setNewVehName(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs font-semibold text-white outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Daily Price (₹) *</label>
+                  <input type="number" required placeholder="5999" value={newVehPrice} onChange={(e) => setNewVehPrice(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-amber-400 outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Deposit (₹) *</label>
+                  <input type="number" required placeholder="5000" value={newVehDeposit} onChange={(e) => setNewVehDeposit(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-white outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Category</label>
+                  <select value={newVehCategory} onChange={(e) => setNewVehCategory(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-amber-400 outline-none">
+                    <option value="SUV">SUV</option>
+                    <option value="Luxury SUV">Luxury SUV</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Luxury Van">Luxury Van</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Seating</label>
+                  <input type="number" value={newVehSeats} onChange={(e) => setNewVehSeats(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none" />
+                </div>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1">Image URL</label>
+                <input type="text" placeholder="https://images.unsplash.com/..." value={newVehImage} onChange={(e) => setNewVehImage(e.target.value)} className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-xs font-semibold text-white outline-none" />
+              </div>
+              <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 mt-4">
+                <Plus className="w-4 h-4" /> Add Vehicle & Publish Custom Price
               </button>
             </form>
           </div>

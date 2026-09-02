@@ -77,7 +77,7 @@ export default function BookingCard({ onSearch }) {
             }`}
           >
             <UserCheck className={`w-4 h-4 ${rentalType === 'chauffeur' ? 'text-brand-gold' : 'text-slate-600'}`} />
-            Chauffeur Driven (With Driver)
+            With Driver
           </button>
         </div>
 
