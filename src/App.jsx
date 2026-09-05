@@ -20,6 +20,7 @@ import FleetPage from './components/fleet/FleetPage';
 import CarDetailsPage from './components/details/CarDetailsPage';
 import ComparePage from './components/compare/ComparePage';
 import LoginPage from './components/auth/LoginPage';
+import PremiumHomepage from './components/home/PremiumHomepage';
 
 // Phase 3 Pages & WhatsApp Floating Widget
 import BookingFlowPage from './components/booking/BookingFlowPage';
@@ -81,8 +82,8 @@ function getPageFromPath(path) {
   if (path === '/login') return 'login';
   if (path === '/business') return 'business';
   if (path === '/ubooking') return 'ubooking';
-  if (path === '/home') return 'home';
-  return 'login';
+  if (path === '/home' || path === '/' || path === '') return 'home';
+  return 'home';
 }
 
 function getPathFromPage(page, data = null) {
@@ -96,7 +97,7 @@ function getPathFromPage(page, data = null) {
   if (page === 'cars') return '/cars';
   if (page === 'confirmation' || page === 'payment') return '/confirmation';
   if (page === 'details' && data?.id) return `/details/${data.id}`;
-  if (page === 'home') return '/home';
+  if (page === 'home') return '/';
   return `/${page}`;
 }
 
@@ -116,19 +117,19 @@ function MainAppContent() {
     const isStepRoute = ['booking', 'dates', 'cars', 'confirmation'].includes(activePage);
     
     if (!user || !user.emailVerified) {
-      if (isStepRoute || activePage === 'home') {
+      if (isStepRoute) {
         setActivePage('login');
         if (window.location.pathname !== '/login') {
           window.history.replaceState({}, '', '/login');
         }
       }
     } else {
-      if (activePage === 'login' || activePage === 'home' || window.location.pathname === '/') {
-        setActivePage('booking');
-        if (window.location.pathname !== '/booking') {
-          window.history.replaceState({}, '', '/booking');
+      if (activePage === 'login') {
+        setActivePage('home');
+        if (window.location.pathname !== '/') {
+          window.history.replaceState({}, '', '/');
         }
-      } else {
+      } else if (isStepRoute) {
         const highest = bookingData?.highestStepReached || 1;
         if (activePage === 'dates' && highest < 3) {
           setActivePage('booking');
@@ -292,17 +293,8 @@ function MainAppContent() {
   const handleAuthSuccess = (authenticatedUser, roleRedirectUrl) => {
     setAuthModalOpen(false);
     setShowAuthModalNeeded(false);
-
-    if (authenticatedUser.role === 'SUPER_ADMIN') {
-      showToast(`Welcome Super Admin Owner ${authenticatedUser.name}!`, 'success');
-      handleNavigate('super-admin', null, authenticatedUser);
-    } else if (authenticatedUser.role === 'ADMIN') {
-      showToast(`Welcome Operations Admin ${authenticatedUser.name}!`, 'success');
-      handleNavigate('admin', null, authenticatedUser);
-    } else {
-      showToast(`Welcome back ${authenticatedUser.name}!`, 'success');
-      handleNavigate('dashboard', null, authenticatedUser);
-    }
+    showToast(`Welcome back ${authenticatedUser.name}!`, 'success');
+    handleNavigate('home', null, authenticatedUser);
   };
 
   // Render Role-Restricted Protected Screens
@@ -325,35 +317,28 @@ function MainAppContent() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-brand-gold selection:text-brand-navy">
       
-      {/* Top Navbar */}
-      <Navbar
-        activePage={activePage}
-        onNavigate={handleNavigate}
-        onOpenAuth={handleOpenAuth}
-        onOpenSupport={() => setSupportModalOpen(true)}
-        onOpenVoiceAI={() => setVoiceAIModalOpen(true)}
-        onOpenPilgrimage={() => setPilgrimageModalOpen(true)}
-      />
+      {/* Top Navbar for internal non-homepage routes */}
+      {activePage !== 'home' && (
+        <Navbar
+          activePage={activePage}
+          onNavigate={handleNavigate}
+          onOpenAuth={handleOpenAuth}
+          onOpenSupport={() => setSupportModalOpen(true)}
+          onOpenVoiceAI={() => setVoiceAIModalOpen(true)}
+          onOpenPilgrimage={() => setPilgrimageModalOpen(true)}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="flex-grow">
         {activePage === 'home' && (
-          <>
-            <Hero onSearch={(searchData) => {
-              if (searchData?.rentalType) {
-                setSelectedRentalType(searchData.rentalType);
-              }
-              handleNavigate('fleet');
-            }} />
-            <TrustSection />
-            <FleetSection onBookNowTriggered={handleBookNow} />
-            <DestinationsSection onNavigate={handleNavigate} />
-            <WhyChooseUs />
-            <PricePredictionWidget />
-            <OffersSection onNavigate={handleNavigate} />
-            <ReviewsSection />
-            <AppShowcase />
-          </>
+          <PremiumHomepage
+            onNavigate={handleNavigate}
+            onBookNow={handleBookNow}
+            onOpenSupport={() => setSupportModalOpen(true)}
+            onOpenVoiceAI={() => setVoiceAIModalOpen(true)}
+            onOpenPilgrimage={() => setPilgrimageModalOpen(true)}
+          />
         )}
 
         {activePage === 'login' && (
