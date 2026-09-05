@@ -256,7 +256,8 @@ class UserDatabaseService {
     if (index === -1) throw new Error('User account not found.');
 
     const user = users[index];
-    const result = await apiVerifyEmailOtp({ email: user.email, otp: otpInput });
+    const otpToken = user.emailDelivery?.otpToken || null;
+    const result = await apiVerifyEmailOtp({ email: user.email, otp: otpInput, otpToken });
     
     if (!result.success) {
       throw new Error(result.message || result.error || 'Invalid OTP.');

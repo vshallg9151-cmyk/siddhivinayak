@@ -88,6 +88,7 @@ const OTP_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 const RESEND_COOLDOWN_MS = 60 * 1000; // 60 seconds
 const MAX_FAILED_ATTEMPTS = 5;
 const MAX_REQUESTS_PER_HOUR = 10;
+const OTP_SECRET = process.env.OTP_SECRET || process.env.JWT_SECRET || 'siddhivinayak-tours-otp-secret-key-2026';
 
 /**
  * Generate cryptographically secure 6-digit numeric OTP
@@ -101,6 +102,57 @@ function generateCryptographic6DigitOtp() {
  */
 function hashOtpCode(rawOtp) {
   return crypto.createHash('sha256').update(rawOtp.trim()).digest('hex');
+}
+
+/**
+ * Generate a stateless HMAC token encoding recipient, raw OTP, and timestamp
+ */
+function createStatelessOtpToken(identifier, rawOtp, timestamp = Date.now()) {
+  const cleanId = (identifier || '').toString().trim().toLowerCase();
+  const cleanOtp = (rawOtp || '').toString().trim();
+  const payload = `${cleanId}:${cleanOtp}:${timestamp}`;
+  const hmac = crypto.createHmac('sha256', OTP_SECRET).update(payload).digest('hex');
+  return `${timestamp}.${hmac}`;
+}
+
+/**
+ * Verify a stateless HMAC token given recipient, input OTP, and token string
+ */
+function verifyStatelessOtpToken(identifier, inputOtp, otpToken) {
+  if (!identifier || !inputOtp || !otpToken || typeof otpToken !== 'string') {
+    return { valid: false, message: 'Invalid verification token.' };
+  }
+
+  const parts = otpToken.split('.');
+  if (parts.length !== 2) {
+    return { valid: false, message: 'Malformed verification token.' };
+  }
+
+  const [timestampStr, tokenHmac] = parts;
+  const timestamp = parseInt(timestampStr, 10);
+  if (isNaN(timestamp)) {
+    return { valid: false, message: 'Invalid token timestamp.' };
+  }
+
+  // 10-minute expiry window for stateless OTP tokens
+  const MAX_TOKEN_AGE = 10 * 60 * 1000;
+  if (Date.now() - timestamp > MAX_TOKEN_AGE) {
+    return { valid: false, message: 'OTP has expired. Please request a new OTP.' };
+  }
+
+  const cleanId = (identifier || '').toString().trim().toLowerCase();
+  const cleanOtp = (inputOtp || '').toString().trim();
+  const expectedPayload = `${cleanId}:${cleanOtp}:${timestampStr}`;
+  const expectedHmac = crypto.createHmac('sha256', OTP_SECRET).update(expectedPayload).digest('hex');
+
+  const bufA = Buffer.from(tokenHmac, 'hex');
+  const bufB = Buffer.from(expectedHmac, 'hex');
+
+  if (bufA.length !== bufB.length || !crypto.timingSafeEqual(bufA, bufB)) {
+    return { valid: false, message: 'Invalid OTP code. Please check your email and enter the correct OTP.' };
+  }
+
+  return { valid: true };
 }
 
 /**
@@ -233,6 +285,7 @@ export async function handleSendEmailOtp(body) {
   const rawOtp = generateCryptographic6DigitOtp();
   const hashedOtp = hashOtpCode(rawOtp);
   const now = Date.now();
+  const otpToken = createStatelessOtpToken(cleanEmail, rawOtp, now);
   const emailHtml = buildOtpEmailHtml(name, rawOtp);
   const emailSubject = 'Your Siddhivinayak Tours & Travels Verification Code';
 
@@ -259,7 +312,8 @@ export async function handleSendEmailOtp(body) {
         resendCooldownUntil: now + RESEND_COOLDOWN_MS,
         attempts: 0,
         used: false,
-        createdAt: now
+        createdAt: now,
+        otpToken
       });
 
       console.log(`[OTP EMAIL] Recipient (TO): ${cleanEmail} | Sender (FROM): ${fromAddress} | Provider: SMTP | Message ID: ${mailInfo.messageId}`);
@@ -271,7 +325,8 @@ export async function handleSendEmailOtp(body) {
           message: `OTP sent successfully to ${cleanEmail}`,
           expiresIn: 300,
           messageId: mailInfo.messageId,
-          provider: 'SMTP'
+          provider: 'SMTP',
+          otpToken
         }
       };
     } catch (smtpErr) {
@@ -326,7 +381,8 @@ export async function handleSendEmailOtp(body) {
           resendCooldownUntil: now + RESEND_COOLDOWN_MS,
           attempts: 0,
           used: false,
-          createdAt: now
+          createdAt: now,
+          otpToken
         });
 
         console.log(`[OTP EMAIL] Recipient (TO): ${cleanEmail} | Provider: Resend | Status: accepted | Message ID: ${resendData.id}`);
@@ -338,7 +394,8 @@ export async function handleSendEmailOtp(body) {
             message: `OTP sent successfully to ${cleanEmail}`,
             expiresIn: 300,
             messageId: resendData.id,
-            provider: 'Resend'
+            provider: 'Resend',
+            otpToken
           }
         };
       } else {
@@ -360,7 +417,8 @@ export async function handleSendEmailOtp(body) {
     resendCooldownUntil: now + RESEND_COOLDOWN_MS,
     attempts: 0,
     used: false,
-    createdAt: now
+    createdAt: now,
+    otpToken
   });
 
   const devMessageId = `dev_mail_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -383,7 +441,8 @@ export async function handleSendEmailOtp(body) {
       expiresIn: 300,
       messageId: devMessageId,
       provider: 'Dev/Testing Mode',
-      devOtp: rawOtp
+      devOtp: rawOtp,
+      otpToken
     }
   };
 }
@@ -392,18 +451,48 @@ export async function handleSendEmailOtp(body) {
  * API HANDLER: Verify Email OTP
  */
 export async function handleVerifyEmailOtp(body) {
-  const { email, otp } = body || {};
+  const { email, otp, otpToken } = body || {};
   const emailCheck = validateEmailServer(email);
   if (!emailCheck.valid) {
     return { status: 400, data: { success: false, message: emailCheck.error } };
   }
 
   const cleanEmail = emailCheck.cleanEmail;
+  const cleanOtp = (otp || '').toString().trim();
+  if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
+    return { status: 400, data: { success: false, message: 'Please enter a valid 6-digit numeric OTP.' } };
+  }
+
+  // 1. Primary Stateless HMAC Token Verification (Vercel Serverless Compatible)
+  if (otpToken) {
+    const tokenResult = verifyStatelessOtpToken(cleanEmail, cleanOtp, otpToken);
+    if (tokenResult.valid) {
+      console.log(`[OTP VERIFIED STATELESS] Recipient: ${cleanEmail} | Status: SUCCESS | Account Activated`);
+      return {
+        status: 200,
+        data: {
+          success: true,
+          message: 'Email verified successfully',
+          emailVerified: true
+        }
+      };
+    } else {
+      return {
+        status: 400,
+        data: {
+          success: false,
+          message: tokenResult.message
+        }
+      };
+    }
+  }
+
+  // 2. Secondary In-Memory Server State Fallback
   const storeKey = `email:${cleanEmail}`;
   const record = serverOtpStore.get(storeKey);
 
   if (!record) {
-    return { status: 400, data: { success: false, message: 'No OTP generated for this email. Please request an OTP.' } };
+    return { status: 400, data: { success: false, message: 'No active OTP found for this email. Please request a new OTP.' } };
   }
 
   if (record.used) {
@@ -417,11 +506,6 @@ export async function handleVerifyEmailOtp(body) {
   if (record.attempts >= MAX_FAILED_ATTEMPTS) {
     record.used = true;
     return { status: 400, data: { success: false, message: 'Maximum incorrect attempts exceeded. Please request a new OTP.' } };
-  }
-
-  const cleanOtp = (otp || '').toString().trim();
-  if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
-    return { status: 400, data: { success: false, message: 'Please enter a valid 6-digit numeric OTP.' } };
   }
 
   const inputHash = hashOtpCode(cleanOtp);
@@ -450,7 +534,7 @@ export async function handleVerifyEmailOtp(body) {
   // Invalidate OTP immediately upon successful verification
   record.used = true;
 
-  console.log(`[OTP VERIFIED] Recipient: ${cleanEmail} | Status: SUCCESS | Account Activated`);
+  console.log(`[OTP VERIFIED STATEFUL] Recipient: ${cleanEmail} | Status: SUCCESS | Account Activated`);
 
   return {
     status: 200,
@@ -486,6 +570,7 @@ export async function handleSendMobileOtp(body) {
   const rawOtp = generateCryptographic6DigitOtp();
   const hashedOtp = hashOtpCode(rawOtp);
   const now = Date.now();
+  const otpToken = createStatelessOtpToken(cleanMobile, rawOtp, now);
 
   // Check if Fast2SMS API Key is configured on the backend
   if (!env.FAST2SMS_API_KEY || env.FAST2SMS_API_KEY.trim() === '' || env.FAST2SMS_API_KEY === 'your_fast2sms_api_key_here') {
@@ -496,7 +581,8 @@ export async function handleSendMobileOtp(body) {
       resendCooldownUntil: now + RESEND_COOLDOWN_MS,
       attempts: 0,
       used: false,
-      createdAt: now
+      createdAt: now,
+      otpToken
     });
 
     console.log('\n========================================================================');
@@ -512,7 +598,8 @@ export async function handleSendMobileOtp(body) {
         success: true,
         message: `OTP sent successfully to +91 ${cleanMobile}`,
         expiresIn: 300,
-        messageId: `dev_sms_${Date.now()}`
+        messageId: `dev_sms_${Date.now()}`,
+        otpToken
       }
     };
   }
@@ -563,7 +650,8 @@ export async function handleSendMobileOtp(body) {
         resendCooldownUntil: now + RESEND_COOLDOWN_MS,
         attempts: 0,
         used: false,
-        createdAt: now
+        createdAt: now,
+        otpToken
       });
 
       console.log(`[OTP SMS] Recipient: +91 ${cleanMobile} | Provider: Fast2SMS | Request status: accepted | Provider message ID: ${messageId}`);
@@ -574,7 +662,8 @@ export async function handleSendMobileOtp(body) {
           success: true,
           message: 'OTP sent successfully',
           expiresIn: 300,
-          messageId
+          messageId,
+          otpToken
         }
       };
     } else {
@@ -610,18 +699,48 @@ export async function handleSendMobileOtp(body) {
  * API HANDLER: Verify Mobile OTP
  */
 export async function handleVerifyMobileOtp(body) {
-  const { mobile, otp } = body || {};
+  const { mobile, otp, otpToken } = body || {};
   const mobileCheck = validateIndianMobileServer(mobile);
   if (!mobileCheck.valid) {
     return { status: 400, data: { success: false, message: mobileCheck.error } };
   }
 
   const cleanMobile = mobileCheck.cleanMobile;
+  const cleanOtp = (otp || '').toString().trim();
+  if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
+    return { status: 400, data: { success: false, message: 'Please enter a valid 6-digit numeric OTP.' } };
+  }
+
+  // 1. Primary Stateless HMAC Token Verification (Vercel Serverless Compatible)
+  if (otpToken) {
+    const tokenResult = verifyStatelessOtpToken(cleanMobile, cleanOtp, otpToken);
+    if (tokenResult.valid) {
+      console.log(`[OTP VERIFIED STATELESS] Recipient: +91 ${cleanMobile} | Status: SUCCESS`);
+      return {
+        status: 200,
+        data: {
+          success: true,
+          message: 'Mobile verified successfully',
+          mobileVerified: true
+        }
+      };
+    } else {
+      return {
+        status: 400,
+        data: {
+          success: false,
+          message: tokenResult.message
+        }
+      };
+    }
+  }
+
+  // 2. Secondary In-Memory Server State Fallback
   const storeKey = `mobile:${cleanMobile}`;
   const record = serverOtpStore.get(storeKey);
 
   if (!record) {
-    return { status: 400, data: { success: false, message: 'No OTP generated for this mobile number. Please request an OTP.' } };
+    return { status: 400, data: { success: false, message: 'No active OTP found for this mobile number. Please request a new OTP.' } };
   }
 
   if (record.used) {
@@ -635,11 +754,6 @@ export async function handleVerifyMobileOtp(body) {
   if (record.attempts >= MAX_FAILED_ATTEMPTS) {
     record.used = true;
     return { status: 400, data: { success: false, message: 'Maximum incorrect attempts exceeded. Please request a new OTP.' } };
-  }
-
-  const cleanOtp = (otp || '').toString().trim();
-  if (cleanOtp.length !== 6 || !/^\d{6}$/.test(cleanOtp)) {
-    return { status: 400, data: { success: false, message: 'Please enter a valid 6-digit numeric OTP.' } };
   }
 
   const inputHash = hashOtpCode(cleanOtp);
