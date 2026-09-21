@@ -457,19 +457,19 @@ export default function PremiumHomepage({
                 </div>
                 <div className="flex flex-col text-left flex-grow min-w-0">
                   <label className="text-[11px] font-medium text-slate-400">Date & Time</label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2">
                     <input
                       type="date"
                       value={pickupDate}
                       onChange={(e) => setPickupDate(e.target.value)}
-                      className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"
+                      className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer max-w-[130px]"
                     />
-                    <span className="text-slate-500 text-xs">|</span>
+                    <span className="text-slate-500 text-xs hidden sm:inline">|</span>
                     <input
                       type="time"
                       value={pickupTime}
                       onChange={(e) => setPickupTime(e.target.value)}
-                      className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer"
+                      className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer max-w-[100px]"
                     />
                   </div>
                 </div>

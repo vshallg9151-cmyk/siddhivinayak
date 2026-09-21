@@ -19,8 +19,8 @@ export default function ComparisonTable({ compareList, onRemoveCar, onSelectCarF
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-luxury overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-center border-collapse">
+      <div className="overflow-x-auto scrollbar-thin">
+        <table className="w-full min-w-[600px] text-center border-collapse">
           <thead>
             <tr className="bg-brand-navy text-white">
               <th className="p-4 text-xs font-extrabold uppercase tracking-wider text-left border-b border-slate-800 w-48">

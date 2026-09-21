@@ -93,7 +93,7 @@ export default function Navbar({
           </button>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1">
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -331,6 +331,41 @@ export default function Navbar({
                 )}
               </a>
             ))}
+
+            <hr className="border-slate-800 my-1" />
+
+            {/* Mobile Tool Items */}
+            <div className="grid grid-cols-2 gap-2 pt-1 pb-1">
+              {/* Pilgrimage */}
+              <button
+                onClick={() => { setMobileMenuOpen(false); onOpenPilgrimage && onOpenPilgrimage(); }}
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                🛕 Pilgrimage
+              </button>
+
+              {/* Support */}
+              <button
+                onClick={() => { setMobileMenuOpen(false); onOpenSupport && onOpenSupport(); }}
+                className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 hover:text-amber-400 font-bold text-xs flex items-center justify-center gap-1.5"
+              >
+                <HelpCircle className="w-4 h-4 text-amber-400" /> Support 24/7
+              </button>
+
+              {/* Language Switcher */}
+              <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 col-span-2">
+                <span className="text-slate-400 flex items-center gap-1.5"><Globe className="w-4 h-4 text-amber-400" /> Language:</span>
+                <select
+                  value={language}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className="bg-slate-950 text-amber-400 font-extrabold text-xs focus:outline-none rounded px-2 py-1 cursor-pointer"
+                >
+                  {INDIAN_LANGUAGES_ONLY.map(lang => (
+                    <option key={lang.code} value={lang.code}>{lang.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             <hr className="border-slate-800 my-1" />
 

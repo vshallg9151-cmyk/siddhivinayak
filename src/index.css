@@ -6,6 +6,16 @@
   html {
     scroll-behavior: smooth;
     font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+  body {
+    overflow-x: hidden;
+    width: 100%;
+    min-height: 100vh;
+  }
+  img, video {
+    max-width: 100%;
+    height: auto;
   }
 }
 
