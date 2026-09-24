@@ -45,8 +45,8 @@ export const DEFAULT_BOOKINGS_SEED = [
   {
     bookingId: 'SVT-2026-394012',
     userId: 'super-admin-owner-001',
-    userName: 'Sachin Mishra',
-    userEmail: 'sachinmishra29199.surat@gmail.com',
+    userName: 'Vishal',
+    userEmail: 'vshallg9151@gmail.com',
     userPhone: '9173746558',
     vehicleId: 'veh-002',
     vehicleName: 'Toyota Fortuner Legender 4x4',

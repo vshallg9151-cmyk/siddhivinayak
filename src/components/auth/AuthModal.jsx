@@ -119,7 +119,7 @@ export default function AuthModal({ initialMode = 'login', onClose, onAuthSucces
     setErrorMessage('');
     setInfoMessage('');
     if (roleType === 'SUPER_ADMIN') {
-      setEmail('sachinmishra29199.surat@gmail.com');
+      setEmail('vshallg9151@gmail.com');
       setPassword('');
       setInfoMessage('Super Admin Owner email selected. Please enter your password to sign in.');
     } else if (roleType === 'ADMIN') {
@@ -458,7 +458,7 @@ export default function AuthModal({ initialMode = 'login', onClose, onAuthSucces
               <button
                 onClick={() => handleQuickPresetLogin('SUPER_ADMIN')}
                 className="py-2 px-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 rounded-xl text-[10px] font-bold border border-purple-500/30 flex flex-col items-center gap-0.5"
-                title="Super Admin Owner (sachinmishra29199.surat@gmail.com)"
+                title="Super Admin Owner (vshallg9151@gmail.com)"
               >
                 <span>👑 Super Admin</span>
                 <span className="text-[8px] text-purple-400 font-extrabold">Owner</span>

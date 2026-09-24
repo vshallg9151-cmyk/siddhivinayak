@@ -190,6 +190,6 @@ export const MOCK_WORKFLOWS = [
 
 export const MOCK_DOCUMENTS = [
   { id: 'doc-1', title: 'Passport_RahulSharma_2026.pdf', category: 'Passport', customer: 'Rahul Sharma', date: '2026-08-01', size: '1.4 MB' },
-  { id: 'doc-2', title: 'DrivingLicense_TharRental_Sachin.png', category: 'ID Proof', customer: 'Sachin Mishra', date: '2026-08-02', size: '850 KB' },
+  { id: 'doc-2', title: 'DrivingLicense_TharRental_Vishal.png', category: 'ID Proof', customer: 'Vishal', date: '2026-08-02', size: '850 KB' },
   { id: 'doc-3', title: 'GST_Invoice_SV-84878.pdf', category: 'Tax Invoice', customer: 'Priya Verma', date: '2026-08-02', size: '420 KB' }
 ];

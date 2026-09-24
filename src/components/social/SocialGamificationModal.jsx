@@ -109,7 +109,7 @@ export default function SocialGamificationModal({ isOpen, onClose }) {
                   <span className="text-amber-400 font-bold">1,840 Points</span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded-xl bg-slate-900 font-semibold">
-                  <span>2. 🥈 Sachin Mishra (You)</span>
+                  <span>2. 🥈 Vishal (You)</span>
                   <span className="text-amber-400 font-bold">1,450 Points</span>
                 </div>
                 <div className="flex justify-between items-center p-2 rounded-xl bg-slate-900 font-semibold">

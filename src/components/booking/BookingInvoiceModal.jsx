@@ -95,7 +95,7 @@ export default function BookingInvoiceModal({ isOpen, onClose, booking }) {
             <div className="grid grid-cols-2 gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800 text-xs">
               <div>
                 <p className="text-[10px] uppercase font-bold text-slate-400">Customer Details</p>
-                <p className="font-bold text-slate-100 mt-1">{booking.passengerName || 'Sachin Mishra'}</p>
+                <p className="font-bold text-slate-100 mt-1">{booking.passengerName || 'Vishal'}</p>
                 <p className="text-slate-400">{booking.phone || '9173746558'}</p>
                 <p className="text-slate-400">{booking.email || 'customer@example.com'}</p>
               </div>

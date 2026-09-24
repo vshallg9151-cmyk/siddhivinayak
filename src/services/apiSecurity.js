@@ -129,7 +129,7 @@ export async function getSuperAdminUsers(user) {
     status: 200,
     success: true,
     data: [
-      { id: 'super-admin-owner-001', name: 'Sachin Mishra', role: 'SUPER_ADMIN', email: 'sachinmishra29199.surat@gmail.com', status: 'ACTIVE', isOwner: true },
+      { id: 'super-admin-owner-001', name: 'Vishal', role: 'SUPER_ADMIN', email: 'vshallg9151@gmail.com', status: 'ACTIVE', isOwner: true },
       { id: 'admin-001', name: 'Siddhivinayak Operations Admin', role: 'ADMIN', email: 'admin@siddhivinayak.com', status: 'ACTIVE', isOwner: false }
     ]
   };

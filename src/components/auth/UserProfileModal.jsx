@@ -4,8 +4,8 @@ import { X, User, Mail, Phone, MapPin, Calendar, CreditCard, Shield, Camera, Sav
 
 export default function UserProfileModal({ isOpen, onClose, userProfile, onSaveProfile }) {
   const [formData, setFormData] = useState({
-    name: userProfile?.name || 'Sachin Mishra',
-    email: userProfile?.email || 'sachin.mishra@example.com',
+    name: userProfile?.name || 'Vishal',
+    email: userProfile?.email || 'vshallg9151@gmail.com',
     phone: userProfile?.phone || '9173746558',
     address: userProfile?.address || 'Andheri West, Mumbai, Maharashtra 400053',
     dob: userProfile?.dob || '1995-06-15',

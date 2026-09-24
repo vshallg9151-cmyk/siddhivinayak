@@ -18,9 +18,9 @@ export default function UnifiedBookingPage({ onCompleteBooking, initialCategory 
   const [selectedItem, setSelectedItem] = useState(TOUR_PACKAGES_DATA[0]);
 
   // Traveler Details Form
-  const [travelerName, setTravelerName] = useState('Sachin Mishra');
+  const [travelerName, setTravelerName] = useState('Vishal');
   const [travelerPhone, setTravelerPhone] = useState('9173746558');
-  const [travelerEmail, setTravelerEmail] = useState('sachin.mishra@example.com');
+  const [travelerEmail, setTravelerEmail] = useState('vshallg9151@gmail.com');
   const [travelersCount, setTravelersCount] = useState(2);
   const [specialRequests, setSpecialRequests] = useState('Need non-smoking room / Jain food');
 

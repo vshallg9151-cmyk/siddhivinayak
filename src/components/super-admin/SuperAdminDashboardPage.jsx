@@ -294,7 +294,7 @@ export default function SuperAdminDashboardPage({ onExit }) {
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Owner: <strong className="text-amber-400">sachinmishra29199.surat@gmail.com</strong> • Complete System & Operations Control
+                Owner: <strong className="text-amber-400">vshallg9151@gmail.com</strong> • Complete System & Operations Control
               </p>
             </div>
           </div>
@@ -415,7 +415,7 @@ export default function SuperAdminDashboardPage({ onExit }) {
                 <Crown className="w-5 h-5 text-purple-400" /> Super Admin Credentials Verification
               </h3>
               <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-xs">
-                <p className="text-slate-400">Predefined Owner Email: <strong className="text-amber-400 font-mono">sachinmishra29199.surat@gmail.com</strong></p>
+                <p className="text-slate-400">Predefined Owner Email: <strong className="text-amber-400 font-mono">vshallg9151@gmail.com</strong></p>
                 <p className="text-slate-400">Owner Role: <strong className="text-purple-400 font-mono">SUPER_ADMIN (isOwner: true)</strong></p>
                 <p className="text-slate-400">Password Storage: <strong className="text-emerald-400 font-mono">bCrypt Hash ($2b$10$siddhiSalt2026...)</strong></p>
                 <p className="text-slate-400">Single Owner Guard: <span className="text-emerald-400 font-bold">● Enforced (Only 1 Super Admin Allowed)</span></p>

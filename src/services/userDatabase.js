@@ -12,8 +12,8 @@ const DB_STORAGE_KEY = 'siddhivinayak_users_db_v3';
 // Predefined Super Admin Owner Credentials (Pre-verified)
 export const PREDEFINED_SUPER_ADMIN = {
   id: 'super-admin-owner-001',
-  name: 'Sachin Mishra (Super Admin & Owner)',
-  email: 'sachinmishra29199.surat@gmail.com',
+  name: 'Vishal (Super Admin & Owner)',
+  email: 'vshallg9151@gmail.com',
   mobile: '9173746558',
   password: hashPassword('siddhi@2005'), // Never store plain text
   role: 'SUPER_ADMIN',
@@ -78,15 +78,23 @@ class UserDatabaseService {
 
         // Ensure default seed users always exist and are synced with valid hashes & ACTIVE state
         INITIAL_SEED_USERS.forEach(seedUser => {
-          const index = users.findIndex(u => u.id === seedUser.id || u.email.toLowerCase().trim() === seedUser.email.toLowerCase().trim());
+          const index = users.findIndex(u => u.id === seedUser.id);
           if (index === -1) {
             users.unshift(seedUser);
             updated = true;
           } else {
-            // Heal any corrupted or outdated seed password hashes in localStorage
-            if (users[index].password !== seedUser.password || !users[index].emailVerified || users[index].status !== 'ACTIVE') {
+            // Heal any corrupted or outdated seed credentials/hashes in localStorage
+            if (
+              users[index].name !== seedUser.name ||
+              users[index].email !== seedUser.email ||
+              users[index].password !== seedUser.password ||
+              !users[index].emailVerified ||
+              users[index].status !== 'ACTIVE'
+            ) {
               users[index] = {
                 ...users[index],
+                email: seedUser.email,
+                name: seedUser.name,
                 password: seedUser.password,
                 emailVerified: true,
                 mobileVerified: true,
