@@ -12,6 +12,7 @@ import {
   handleResendEmailOtp,
   handleResendMobileOtp
 } from './otpBackend.js';
+import { handleRegisterUser, handleLoginUser } from './authHandlers.js';
 import { checkDatabaseConnection } from './mongodb.js';
 
 function parseRequestBody(req) {
@@ -97,6 +98,16 @@ export function otpBackendPlugin() {
 
         try {
           const body = await parseRequestBody(req);
+
+          if (url === '/api/auth/register') {
+            const result = await handleRegisterUser(body);
+            return sendJsonResponse(res, result.status, result.data);
+          }
+
+          if (url === '/api/auth/login') {
+            const result = await handleLoginUser(body);
+            return sendJsonResponse(res, result.status, result.data);
+          }
 
           if (url === '/api/auth/send-email-otp') {
             const result = await handleSendEmailOtp(body);

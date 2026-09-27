@@ -15,6 +15,7 @@ import {
   handleResendEmailOtp,
   handleResendMobileOtp
 } from './server/otpBackend.js';
+import { handleRegisterUser, handleLoginUser } from './server/authHandlers.js';
 import { checkDatabaseConnection } from './server/mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,6 +115,16 @@ const server = http.createServer(async (req, res) => {
 
     try {
       const body = await parseRequestBody(req);
+
+      if (url === '/api/auth/register') {
+        const result = await handleRegisterUser(body);
+        return sendJsonResponse(res, result.status, result.data);
+      }
+
+      if (url === '/api/auth/login') {
+        const result = await handleLoginUser(body);
+        return sendJsonResponse(res, result.status, result.data);
+      }
 
       if (url === '/api/auth/send-email-otp') {
         const result = await handleSendEmailOtp(body);

@@ -52,7 +52,7 @@ export default function LoginPage({ onNavigate, onAuthSuccess }) {
 
     try {
       if (mode === 'login') {
-        const { user: loggedInUser, redirectUrl } = login({ email, password });
+        const { user: loggedInUser, redirectUrl } = await login({ email, password });
         if (onAuthSuccess) onAuthSuccess(loggedInUser, redirectUrl);
         else if (onNavigate) onNavigate('booking', null, loggedInUser);
       } else {

@@ -16,6 +16,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import nodemailer from 'nodemailer';
+import { activateMongoUserEmail } from './userModel.js';
 
 // Helper to load server-side .env file if present
 function loadEnvConfig() {
@@ -491,6 +492,11 @@ export async function handleVerifyEmailOtp(body) {
     const tokenResult = verifyStatelessOtpToken(cleanEmail, cleanOtp, otpToken);
     if (tokenResult.valid) {
       console.log(`[OTP VERIFIED STATELESS] Recipient: ${cleanEmail} | Status: SUCCESS | Account Activated`);
+      try {
+        await activateMongoUserEmail(cleanEmail);
+      } catch (dbErr) {
+        console.warn('[OTP VERIFY] MongoDB account activation warning:', dbErr.message);
+      }
       return {
         status: 200,
         data: {
@@ -558,6 +564,11 @@ export async function handleVerifyEmailOtp(body) {
   record.used = true;
 
   console.log(`[OTP VERIFIED STATEFUL] Recipient: ${cleanEmail} | Status: SUCCESS | Account Activated`);
+  try {
+    await activateMongoUserEmail(cleanEmail);
+  } catch (dbErr) {
+    console.warn('[OTP VERIFY] MongoDB account activation warning:', dbErr.message);
+  }
 
   return {
     status: 200,

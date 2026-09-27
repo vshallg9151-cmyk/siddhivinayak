@@ -36,7 +36,7 @@ export default function AuthModal({ initialMode = 'login', onClose, onAuthSucces
 
     try {
       if (mode === 'login') {
-        const { user: loggedInUser, redirectUrl } = login({ email, password });
+        const { user: loggedInUser, redirectUrl } = await login({ email, password });
         if (onAuthSuccess) onAuthSuccess(loggedInUser, redirectUrl);
         onClose();
       } else {

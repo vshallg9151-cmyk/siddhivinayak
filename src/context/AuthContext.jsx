@@ -89,43 +89,25 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Secure Login Procedure with Dual Verification Enforcement
+   * Secure Login Procedure with MongoDB Atlas authentication
    */
-  const login = ({ email, password }) => {
-    const identifier = email ? email.toString().trim() : '';
-    const dbUser = userDB.getUserByIdentifier(identifier);
+  const login = async ({ email, password }) => {
+    const authResult = await userDB.authenticateUser({ email, password });
+    const dbUser = authResult.user;
+    const jwtToken = authResult.token || generateToken(dbUser);
 
-    if (!dbUser) {
-      throw new Error('Invalid email, mobile number, or password.');
-    }
-
-    const isMatch = comparePassword(password, dbUser.password);
-    if (!isMatch) {
-      throw new Error('Invalid email, mobile number, or password.');
-    }
-
-    if (!dbUser.emailVerified) {
-      const err = new Error('Please verify your email address to continue.');
-      err.unverifiedUser = dbUser;
-      err.verificationType = 'EMAIL';
-      throw err;
-    }
-
-    if (dbUser.status !== 'ACTIVE') {
-      throw new Error('Your account has been deactivated. Please contact the Super Admin.');
-    }
-
-    const jwtToken = generateToken(dbUser);
     setUser(dbUser);
     setToken(jwtToken);
 
     triggerPendingIntentResume();
 
-    let redirectUrl = '/user/dashboard';
-    if (dbUser.role === 'SUPER_ADMIN') {
-      redirectUrl = '/super-admin/dashboard';
-    } else if (dbUser.role === 'ADMIN') {
-      redirectUrl = '/admin/dashboard';
+    let redirectUrl = authResult.redirectUrl || '/user/dashboard';
+    if (!authResult.redirectUrl) {
+      if (dbUser.role === 'SUPER_ADMIN') {
+        redirectUrl = '/super-admin/dashboard';
+      } else if (dbUser.role === 'ADMIN') {
+        redirectUrl = '/admin/dashboard';
+      }
     }
 
     return { user: dbUser, token: jwtToken, redirectUrl };
@@ -150,7 +132,7 @@ export function AuthProvider({ children }) {
   /**
    * 1-Click Test Login Presets
    */
-  const loginAsPreset = (roleType) => {
+  const loginAsPreset = async (roleType) => {
     let targetEmail = 'rahul.sharma@example.com';
     let targetPass = 'user123';
 
@@ -162,7 +144,7 @@ export function AuthProvider({ children }) {
       targetPass = 'admin123';
     }
 
-    return login({ email: targetEmail, password: targetPass });
+    return await login({ email: targetEmail, password: targetPass });
   };
 
   /**

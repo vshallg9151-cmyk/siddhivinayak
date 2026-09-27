@@ -4,7 +4,9 @@ import { validateEmailAddress } from './emailService.js';
 import {
   apiSendEmailOtp,
   apiVerifyEmailOtp,
-  apiResendEmailOtp
+  apiResendEmailOtp,
+  apiRegisterUser,
+  apiLoginUser
 } from './otpApiClient.js';
 
 const DB_STORAGE_KEY = 'siddhivinayak_users_db_v3';
@@ -159,8 +161,8 @@ class UserDatabaseService {
   }
 
   /**
-   * Public Registration -> Requires ONLY Email OTP Verification for activation
-   * (Mobile number is preserved for customer contact/booking/WhatsApp)
+   * Public Registration -> Persists to MongoDB Atlas (Database: siddhivinayak, Collection: users)
+   * Dispatches Email OTP for account activation
    */
   async registerUser({ name, email, mobile, password }) {
     const emailVal = await validateEmailAddress(email);
@@ -176,39 +178,30 @@ class UserDatabaseService {
     const cleanEmail = emailVal.cleanEmail;
     const cleanMobile = mobileVal.cleanMobile;
 
-    if (this.getUserByEmail(cleanEmail)) {
-      throw new Error('An account with this email address already exists.');
-    }
-
-    if (this.getUserByMobile(cleanMobile)) {
-      throw new Error('An account with this mobile number already exists.');
-    }
-
-    // Call Real Resend Backend Email OTP Dispatch
-    const emailDelivery = await apiSendEmailOtp({ email: cleanEmail, name: name.trim() });
-
-    const newUser = {
-      id: `usr-${Date.now()}`,
+    // Call Vercel Serverless Function: POST /api/auth/register (MongoDB Atlas)
+    const result = await apiRegisterUser({
       name: name.trim(),
       email: cleanEmail,
       mobile: cleanMobile,
-      password: hashPassword(password),
-      role: 'USER',
-      status: 'PENDING_VERIFICATION', // Inactive until Email OTP is verified
-      isOwner: false,
-      emailVerified: false,
-      mobileVerified: true, // No SMS OTP required
-      emailDelivery,
-      mustChangePassword: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      password
+    });
 
-    const users = this.getUsers();
-    users.push(newUser);
-    this.saveUsers(users);
+    const registeredUser = result.user;
+    const emailDelivery = result.emailDelivery;
 
-    return { user: newUser, emailDelivery };
+    // Cache sanitized user record in localStorage for quick UI state (never store plain password)
+    try {
+      const users = this.getUsers();
+      const existingIdx = users.findIndex(u => u.email === cleanEmail);
+      if (existingIdx !== -1) {
+        users[existingIdx] = registeredUser;
+      } else {
+        users.push(registeredUser);
+      }
+      this.saveUsers(users);
+    } catch {}
+
+    return { user: registeredUser, emailDelivery };
   }
 
   /**
@@ -336,9 +329,43 @@ class UserDatabaseService {
   }
 
   /**
-   * Authenticate user with email and password
+   * Authenticate user against MongoDB Atlas (POST /api/auth/login)
    */
-  authenticateUser({ email, password }) {
+  async authenticateUser({ email, password }) {
+    // 1. Authenticate with MongoDB Atlas via POST /api/auth/login
+    try {
+      const loginResult = await apiLoginUser({ email, password });
+      if (loginResult && loginResult.user) {
+        // Cache sanitized user in local storage
+        try {
+          const users = this.getUsers();
+          const existingIdx = users.findIndex(u => u.email === loginResult.user.email);
+          if (existingIdx !== -1) {
+            users[existingIdx] = loginResult.user;
+          } else {
+            users.push(loginResult.user);
+          }
+          this.saveUsers(users);
+        } catch {}
+
+        return {
+          user: loginResult.user,
+          token: loginResult.token,
+          redirectUrl: loginResult.redirectUrl
+        };
+      }
+    } catch (apiErr) {
+      if (apiErr.unverifiedUser) {
+        throw apiErr;
+      }
+      // If server returned an explicit error (like 401 Invalid Credentials), rethrow it
+      if (apiErr.message && !apiErr.message.includes('Network error')) {
+        throw apiErr;
+      }
+      console.warn('[AUTH] Backend login unreachable, falling back to local credentials:', apiErr.message);
+    }
+
+    // 2. Local fallback for offline/predefined seed accounts
     const user = this.getUserByEmail(email);
     if (!user) {
       throw new Error('Invalid email or password.');
@@ -352,14 +379,13 @@ class UserDatabaseService {
       throw new Error('This account has been deactivated by Super Admin.');
     }
 
-    // If registered user has not verified Email OTP, prompt OTP verification
     if (user.role === 'USER' && !user.emailVerified) {
       const err = new Error('Email OTP verification is required to access your account.');
       err.unverifiedUser = user;
       throw err;
     }
 
-    return user;
+    return { user };
   }
 
   /**
