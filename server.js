@@ -1,6 +1,6 @@
 /**
  * Standalone Production Server for Siddhivinayak Tours & Travels
- * Serves static assets and provides secure server-side OTP dispatch API routes.
+ * Serves static assets and provides secure server-side OTP dispatch & health API routes.
  */
 
 import http from 'node:http';
@@ -15,6 +15,7 @@ import {
   handleResendEmailOtp,
   handleResendMobileOtp
 } from './server/otpBackend.js';
+import { checkDatabaseConnection } from './server/mongodb.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -39,6 +40,16 @@ const MIME_TYPES = {
 
 function parseRequestBody(req) {
   return new Promise((resolve) => {
+    if (req.body && typeof req.body === 'object') {
+      return resolve(req.body);
+    }
+    if (req.body && typeof req.body === 'string') {
+      try {
+        return resolve(JSON.parse(req.body));
+      } catch {
+        return resolve({});
+      }
+    }
     let body = '';
     req.on('data', (chunk) => {
       body += chunk.toString();
@@ -49,6 +60,9 @@ function parseRequestBody(req) {
       } catch {
         resolve({});
       }
+    });
+    req.on('error', () => {
+      resolve({});
     });
   });
 }
@@ -64,7 +78,35 @@ function sendJsonResponse(res, status, data) {
 const server = http.createServer(async (req, res) => {
   const url = req.url ? req.url.split('?')[0] : '/';
 
-  // 1. API Route Handlers
+  // 1. Health check endpoint
+  if (url === '/api/health') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return sendJsonResponse(res, 405, {
+        success: false,
+        message: 'Method Not Allowed. Use GET for health status.'
+      });
+    }
+    try {
+      const dbStatus = await checkDatabaseConnection();
+      return sendJsonResponse(res, 200, {
+        success: true,
+        message: 'Siddhivinayak API is running',
+        database: dbStatus.connected ? 'connected' : 'disconnected',
+        databaseMessage: dbStatus.message,
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      return sendJsonResponse(res, 500, {
+        success: false,
+        message: 'Siddhivinayak API encountered an error checking health',
+        database: 'disconnected',
+        error: err.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  // 2. API Route Handlers for Authentication & OTP
   if (url.startsWith('/api/auth/')) {
     if (req.method !== 'POST') {
       return sendJsonResponse(res, 405, { success: false, message: 'Method Not Allowed' });
@@ -110,7 +152,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 2. Static File Serving
+  // 3. Static File Serving
   let filePath = path.join(DIST_DIR, url === '/' ? 'index.html' : url);
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
